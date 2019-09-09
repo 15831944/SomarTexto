@@ -17,7 +17,6 @@ namespace SomarTexto
             Document doc = Application.DocumentManager.MdiActiveDocument;
             Database db = doc.Database;
 
-            // Create a TypedValue array to define the filter criteria
             TypedValue[] tvs = new[]
             {
                 new TypedValue(0, "TEXT"), // only DBText or MText
@@ -31,39 +30,37 @@ namespace SomarTexto
 
             using (Transaction tr = db.TransactionManager.StartTransaction())
             {
-                List<int> lista = new List<int>();
+                List<double> lista = new List<double>();
 
                 foreach (SelectedObject obj in selection.Value)
                 {
-                    ObjectId id = obj.ObjectId;
+                    DBText text = (DBText)tr.GetObject(obj.ObjectId, OpenMode.ForRead);
 
-                    DBText text = (DBText)tr.GetObject(id, OpenMode.ForRead);
+                    string textModified = text.TextString;
+                    textModified = textModified.Split('/')[0]; // Apenas por conveniência, a parte esquerda do
+                                                               // número será usado para a soma
 
-                    int num = -1;
-                    string numLadoEsquerdo = text.TextString.Split('+')[0];
-                    string numLadoDireito = string.Empty;
-
-                    try
+                    if (textModified.ToString().Contains("+"))
                     {
-                        numLadoDireito = text.TextString.Split('+')[1].Replace("*", "");
+                        lista.Add(Convert.ToDouble(textModified.ToString().Split('+')[0]));
+                        lista.Add(Convert.ToDouble(textModified.ToString().Split('+')[1].Replace("*", "").Replace("(2)", "")));
                     }
-                    catch
+                    else if (textModified.ToString().Contains(" "))
                     {
-                        // Faz nada...
-                    }
+                        string[] texts = textModified.Split(' ');
 
-                    if (int.TryParse(numLadoEsquerdo, out num))
-                    {
-                        lista.Add(Convert.ToInt32(numLadoEsquerdo));
+                        foreach (var item in texts)
+                        {
+                            lista.Add(Convert.ToDouble(item.Replace("*", "").Replace("(2)", "")));
+                        }
                     }
-
-                    if (int.TryParse(numLadoDireito, out num))
+                    else
                     {
-                        lista.Add(Convert.ToInt32(numLadoDireito));
+                        lista.Add(Convert.ToDouble(textModified));
                     }
                 }
 
-                int soma = 0;
+                double soma = 0;
                 foreach (var item in lista)
                 {
                     soma += item;
