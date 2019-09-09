@@ -43,15 +43,18 @@ namespace SomarTexto
                     if (textModified.ToString().Contains("+"))
                     {
                         lista.Add(Convert.ToDouble(textModified.ToString().Split('+')[0]));
-                        lista.Add(Convert.ToDouble(textModified.ToString().Split('+')[1].Replace("*", "").Replace("(2)", "")));
+                        lista.Add(Convert.ToDouble(textModified.ToString().Split('+')[1].Replace("*", "").Replace("(2)", "").Trim()));
                     }
                     else if (textModified.ToString().Contains(" "))
                     {
                         string[] texts = textModified.Split(' ');
-
+                        
                         foreach (var item in texts)
                         {
-                            lista.Add(Convert.ToDouble(item.Replace("*", "").Replace("(2)", "")));
+                            if (!(item == "" || item == " " || item == "  "))
+                            {
+                                lista.Add(Convert.ToDouble(item.Replace("*", "").Replace("(2)", "").Trim()));
+                            }
                         }
                     }
                     else
